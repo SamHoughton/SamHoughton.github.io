@@ -993,24 +993,63 @@ function animateThreatMap(canvas) {
     const h   = canvas.height;
     const tgt = ll2xy(TARGET.lat, TARGET.lng, w, h);
 
-    // Build initial arcs from first 10 pool entries
-    const arcs = THREAT_POOL.slice(0, 10).map(n => {
+    const MAX_ARCS = 7;
+    const MIN_ARCS = 3;
+
+    function makeArc(node) {
         const g = rand(THREAT_GROUPS);
         return {
-            src:               ll2xy(n.lat, n.lng, w, h),
-            color:             g.color,
-            name:              n.name,
-            group:             g.name,
-            progress:          Math.random(),
-            speed:             0.0018 + Math.random() * 0.003,
-            cycleCount:        0,
-            cyclesBeforeChange: randInt(2, 5),
-            triggered:         false,
+            src:      ll2xy(node.lat, node.lng, w, h),
+            color:    g.color,
+            name:     node.name,
+            group:    g.name,
+            progress: Math.random(),
+            speed:    0.002 + Math.random() * 0.0025,
+            opacity:  0,
         };
-    });
+    }
 
-    // Intercept flash queue
+    // Start with 5 random arcs from a shuffled pool
+    const shuffled = [...THREAT_POOL].sort(() => Math.random() - 0.5);
+    const arcs = shuffled.slice(0, 5).map(n => { const a = makeArc(n); a.opacity = 1; return a; });
+
     const flashes = [];
+
+    // Spawn timer — fires every 5-10 seconds
+    let lastSpawn    = Date.now();
+    let nextSpawnIn  = randInt(5000, 10000);
+
+    function spawnNewThreat() {
+        const usedNames = new Set(arcs.map(a => a.name));
+        const available = THREAT_POOL.filter(n => !usedNames.has(n.name));
+        if (!available.length) return;
+
+        const node = rand(available);
+
+        // If at max, intercept + remove a random existing arc first
+        if (arcs.length >= MAX_ARCS) {
+            const idx  = randInt(0, arcs.length - 1);
+            const gone = arcs.splice(idx, 1)[0];
+            flashes.push({ text: `>> INTERCEPTED: ${gone.name}`, life: 1.0, x: tgt.x + 12, y: tgt.y + randInt(-40, 40), color: '#00ff41' });
+            tmBlockedCount += randInt(1, 4);
+            document.getElementById('s-blocked').textContent = tmBlockedCount;
+        }
+
+        const arc = makeArc(node);
+        arcs.push(arc);
+
+        // Flash near new source city
+        flashes.push({ text: `>> NEW THREAT: ${node.name}`, life: 1.2, x: arc.src.x + 7, y: arc.src.y - 12, color: arc.color });
+
+        // Bump threat counter
+        if (Math.random() > 0.35) {
+            const el = document.getElementById('s-threats');
+            el.textContent = parseInt(el.textContent) + randInt(1, 3);
+        }
+
+        lastSpawn   = Date.now();
+        nextSpawnIn = randInt(5000, 10000);
+    }
 
     // Dot grid
     const dotGrid = [];
@@ -1023,11 +1062,12 @@ function animateThreatMap(canvas) {
         return { x: mt*mt*sx + 2*mt*t*cx + t*t*tx, y: mt*mt*sy + 2*mt*t*cy + t*t*ty };
     }
 
-    let frameCount = 0;
-
     function frame() {
         if (!tmRunning) return;
-        frameCount++;
+
+        // Spawn check
+        if (Date.now() - lastSpawn >= nextSpawnIn) spawnNewThreat();
+        if (arcs.length < MIN_ARCS) spawnNewThreat();
 
         ctx.clearRect(0, 0, w, h);
         ctx.fillStyle = '#000';
@@ -1057,40 +1097,17 @@ function animateThreatMap(canvas) {
 
         // Arcs
         arcs.forEach(arc => {
+            // Fade in new arcs
+            if (arc.opacity < 1) arc.opacity = Math.min(1, arc.opacity + 0.025);
+
             arc.progress += arc.speed;
 
-            // On completion
             if (arc.progress >= 1) {
                 arc.progress -= 1;
-                arc.cycleCount++;
-                arc.triggered = false;
-
-                // Intercept flash
-                flashes.push({
-                    text:  `>> INTERCEPTED: ${arc.name}`,
-                    life:  1.0,
-                    x:     tgt.x + 12,
-                    y:     tgt.y + randInt(-35, 35),
-                });
+                // Intercept flash on each arrival
+                flashes.push({ text: `>> INTERCEPTED: ${arc.name}`, life: 1.0, x: tgt.x + 12, y: tgt.y + randInt(-40, 40), color: '#00ff41' });
                 tmBlockedCount += randInt(1, 4);
                 document.getElementById('s-blocked').textContent = tmBlockedCount;
-
-                // Rotate source after N cycles
-                if (arc.cycleCount >= arc.cyclesBeforeChange) {
-                    const newNode  = rand(THREAT_POOL);
-                    const newGroup = rand(THREAT_GROUPS);
-                    arc.src   = ll2xy(newNode.lat, newNode.lng, w, h);
-                    arc.name  = newNode.name;
-                    arc.group = newGroup.name;
-                    arc.color = newGroup.color;
-                    arc.cycleCount        = 0;
-                    arc.cyclesBeforeChange = randInt(2, 5);
-                    // Bump threat counter occasionally
-                    if (Math.random() > 0.5) {
-                        const el = document.getElementById('s-threats');
-                        el.textContent = parseInt(el.textContent) + randInt(1, 3);
-                    }
-                }
             }
 
             const sx = arc.src.x, sy = arc.src.y;
@@ -1109,10 +1126,10 @@ function animateThreatMap(canvas) {
                 s === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
             }
             ctx.strokeStyle = arc.color;
-            ctx.globalAlpha = 0.6;
+            ctx.globalAlpha = 0.6 * arc.opacity;
             ctx.lineWidth   = 1;
             ctx.stroke();
-            ctx.globalAlpha = 1;
+            ctx.globalAlpha = arc.opacity;
 
             // Head
             const head = quadPoint(end, sx, sy, cx, cy, tx, ty);
@@ -1139,19 +1156,20 @@ function animateThreatMap(canvas) {
             ctx.fillText(arc.name,  sx + 7, sy - 4);
             ctx.fillStyle = 'rgba(200,220,200,0.45)';
             ctx.fillText(arc.group, sx + 7, sy + 7);
+            ctx.globalAlpha = 1;
         });
 
-        // Intercept flashes
+        // Flashes
         for (let i = flashes.length - 1; i >= 0; i--) {
             const f = flashes[i];
             f.life -= 0.016;
             if (f.life <= 0) { flashes.splice(i, 1); continue; }
             ctx.save();
             ctx.globalAlpha = Math.min(1, f.life * 2);
-            ctx.fillStyle   = '#00ff41';
+            ctx.fillStyle   = f.color || '#00ff41';
             ctx.font        = 'bold 9px Share Tech Mono';
             ctx.shadowBlur  = 6;
-            ctx.shadowColor = '#00ff41';
+            ctx.shadowColor = f.color || '#00ff41';
             ctx.fillText(f.text, f.x, f.y);
             ctx.restore();
         }
