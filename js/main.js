@@ -84,6 +84,7 @@ const COMMANDS = {
         { k: 'out', v: '  experience   show operational history' },
         { k: 'out', v: '  skills       list technical capabilities' },
         { k: 'out', v: '  certs        display certifications' },
+        { k: 'out', v: '  projects     view project portfolio' },
         { k: 'out', v: '  threat-map   launch global threat map' },
         { k: 'out', v: '  scan         run network scan' },
         { k: 'out', v: '  hunt         initiate threat hunt' },
@@ -94,6 +95,8 @@ const COMMANDS = {
         { k: 'out', v: '  cv           open LinkedIn profile' },
         { k: 'out', v: '  contact      display contact intel' },
         { k: 'out', v: '  clear        clear terminal' },
+        { k: 'blk' },
+        { k: 'dim', v: '  // Hint: this is a real shell. Try ls, ps, neofetch...' },
         { k: 'blk' },
     ],
 
@@ -179,6 +182,25 @@ const COMMANDS = {
         { k: 'blk' },
     ],
 
+    projects: () => [
+        { k: 'hdr', v: '┌─ PROJECTS.GIT ─────────────────────────────┐' },
+        { k: 'blk' },
+        { k: 'out', v: '  >> samhoughton.github.io' },
+        { k: 'out', v: '     Cyber-ops themed interactive portfolio' },
+        { k: 'out', v: '     Terminal engine, live threat map, Canvas API animations' },
+        { k: 'dim', v: '     Stack: HTML · CSS · Vanilla JS · Canvas API' },
+        { k: 'dim', v: '     [ github.com/SamHoughton/SamHoughton.github.io ]' },
+        { k: 'blk' },
+        { k: 'out', v: '  >> dyslexia-extension  [BSc Dissertation]' },
+        { k: 'out', v: '     Chrome extension improving readability for users with dyslexia' },
+        { k: 'out', v: '     University of Lincoln — BSc Computer Science, 2019' },
+        { k: 'dim', v: '     Stack: Chrome Extension API · JavaScript · CSS' },
+        { k: 'dim', v: '     [ github.com/SamHoughton ]' },
+        { k: 'blk' },
+        { k: 'dim', v: '  // More at: github.com/SamHoughton' },
+        { k: 'blk' },
+    ],
+
     cv: () => 'CV',
     clear:        () => 'CLEAR',
     'threat-map': () => 'THREAT_MAP',
@@ -188,6 +210,64 @@ const COMMANDS = {
     ioc:          () => 'ASYNC',
     decode:       () => 'ASYNC',
     ssh:          () => 'ASYNC',
+
+    // ── Shell Easter Eggs ──────────────────────────────────────
+    sudo: () => [
+        { k: 'out',  v: '  [sudo] password for sam: ' },
+        { k: 'out',  v: '  ·······' },
+        { k: 'warn', v: '  [!] Privilege escalation attempt detected' },
+        { k: 'warn', v: '  [!] CrowdStrike alert raised — Incident #IR-2026-0042 opened' },
+        { k: 'dim',  v: '  // Nice try.' },
+        { k: 'blk' },
+    ],
+    pwd:  () => [{ k: 'out', v: '  /home/sam/defence/operations' }, { k: 'blk' }],
+    date: () => [{ k: 'out', v: `  ${new Date().toUTCString()}` }, { k: 'blk' }],
+    cd:   () => [
+        { k: 'out', v: "  cd: can't navigate away — you're already at the core." },
+        { k: 'dim', v: '  // Location: /home/sam/defence/operations' },
+        { k: 'blk' },
+    ],
+    exit: () => [
+        { k: 'dim', v: '  logout' },
+        { k: 'dim', v: '  [Connection to sam@defence closed]' },
+        { k: 'blk' },
+        { k: 'out', v: '  ...' },
+        { k: 'out', v: '  Just kidding. The terminal persists.' },
+        { k: 'blk' },
+    ],
+    ps:  () => [
+        { k: 'out', v: `  ${'PID'.padEnd(7)} ${'USER'.padEnd(15)} ${'CPU'.padEnd(6)} ${'MEM'.padEnd(6)} COMMAND` },
+        { k: 'out', v: '  ' + '─'.repeat(56) },
+        { k: 'out', v: '  1       root            0.0    0.1    /sbin/init' },
+        { k: 'out', v: '  411     root            0.0    0.2    sshd' },
+        { k: 'out', v: '  844     crowdstrike     2.1    1.4    falcond  [EDR ACTIVE]' },
+        { k: 'out', v: '  912     sam             0.3    0.5    siem-agent' },
+        { k: 'out', v: '  1024    sam             0.1    0.2    bash' },
+        { k: 'out', v: '  1337    sam             0.0    0.1    threat-hunt-daemon' },
+        { k: 'out', v: '  2048    sam             0.5    0.8    csirt-terminal' },
+        { k: 'dim', v: '  [204 processes hidden by security policy]' },
+        { k: 'blk' },
+    ],
+    ifconfig: () => [
+        { k: 'out', v: '  eth0    inet 10.0.0.42       netmask 255.255.255.0  [UP]' },
+        { k: 'out', v: '          ether aa:bb:cc:dd:ee:ff  mtu 1500' },
+        { k: 'blk' },
+        { k: 'out', v: '  lo      inet 127.0.0.1       netmask 255.0.0.0     [LOOPBACK]' },
+        { k: 'blk' },
+        { k: 'out', v: '  vpn0    inet 172.16.0.1      netmask 255.255.255.0  [ENCRYPTED]' },
+        { k: 'out', v: '          tunnel: AES-256-GCM   status: ACTIVE' },
+        { k: 'blk' },
+    ],
+    history:  () => 'HISTORY',
+    reboot:   () => 'REBOOT',
+    ls:       () => 'ASYNC',
+    cat:      () => 'ASYNC',
+    uname:    () => 'ASYNC',
+    ping:     () => 'ASYNC',
+    vim:      () => 'ASYNC',
+    neofetch: () => 'ASYNC',
+    man:      () => 'ASYNC',
+    ip:       () => 'ASYNC',
 };
 
 // ── Async Command Runner ────────────────────────────────────────
@@ -378,6 +458,196 @@ async function runAsyncCmd(baseCmd, args, term) {
         break;
     }
 
+    // ── Easter Eggs ──────────────────────────────────────────────
+
+    case 'ls': {
+        const longFlag = args.includes('-la') || args.includes('-l') || args.includes('-a');
+        await tl('out', '  .', 0);
+        if (longFlag) {
+            const files = [
+                'drwxr-x---  sam  defence  .',
+                'drwxr-x---  root root     ..',
+                '-rw-r-----  sam  defence  about.txt',
+                '-rw-r-----  sam  defence  certs.json',
+                '-rw-------  sam  defence  flag.txt',
+                '-rwxr-x---  sam  defence  deploy.sh',
+                'drwx------  sam  defence  incidents/',
+                '-rw-------  sam  defence  ioc_feed.json',
+                'drwxr-x---  sam  defence  playbooks/',
+                '-rw-r-----  sam  defence  skills.json',
+                'drwx------  sam  defence  .ssh/',
+            ];
+            await tl('out', `  ${'PERM'.padEnd(18)} ${'USER'.padEnd(6)} ${'GROUP'.padEnd(10)} NAME`, 0);
+            await tl('out', '  ' + '─'.repeat(52), 50);
+            for (const f of files) await tl('out', `  ${f}`, 40);
+        } else {
+            const items = ['about.txt', 'certs.json', 'deploy.sh', 'flag.txt', 'incidents/', 'ioc_feed.json', 'playbooks/', 'skills.json'];
+            await tl('out', '  ' + items.join('   '), 0);
+        }
+        await tl('blk');
+        break;
+    }
+
+    case 'cat': {
+        const file = args[0] || '';
+        if (!file) {
+            await tl('err', '  cat: missing file argument', 0);
+            await tl('dim', '  // Try: cat flag.txt  |  cat about.txt  |  cat /etc/passwd', 0);
+            await tl('blk');
+            break;
+        }
+        if (file === 'flag.txt') {
+            await tl('out', '  [*] Reading flag.txt...', 300);
+            await tl('blk');
+            await tl('hdr', '  flag{y0u_f0und_th3_h1dd3n_t3rm1nal_g00d_hunt}', 0);
+            await tl('blk');
+            await tl('dim', '  // Achievement unlocked: Terminal Explorer', 0);
+            await tl('blk');
+        } else if (file === 'about.txt') {
+            await tl('out', '  Samuel Houghton — Staff CSIRT Engineering Manager', 0);
+            await tl('out', '  OVO Energy // London, England', 0);
+            await tl('out', '  Expert in Incident Response, CrowdStrike EDR, SIEM operations.', 0);
+            await tl('out', '  5+ years defending enterprise infrastructure.', 0);
+            await tl('blk');
+        } else if (file === 'skills.json' || file === 'certs.json') {
+            await tl('out', `  [*] cat ${file}`, 200);
+            await tl('out', '  [!] File encrypted — use CSIRT keystore to access', 0);
+            await tl('dim', '  // Use the skills command instead.', 0);
+            await tl('blk');
+        } else if (file === '/etc/passwd' || file === 'ioc_feed.json') {
+            await tl('out', `  [*] cat ${file}`, 100);
+            await tl('warn', '  [!] Access denied — file contains classified material', 0);
+            await tl('warn', '  [!] Unauthorised read attempt logged', 0);
+            await tl('dim', '  // CrowdStrike Falcon: file access policy triggered', 0);
+            await tl('blk');
+        } else {
+            await tl('err', `  cat: ${file}: No such file or directory`, 0);
+            await tl('blk');
+        }
+        break;
+    }
+
+    case 'uname': {
+        const aFlag = args.includes('-a') || args.includes('-all');
+        if (aFlag) {
+            await tl('out', '  CSIRT-Linux sam-defence 4.2.0-crowdstrike-falcon #1 SMP ' + new Date().toDateString() + ' x86_64 GNU/Linux', 0);
+        } else {
+            await tl('out', '  CSIRT-Linux', 0);
+        }
+        await tl('blk');
+        break;
+    }
+
+    case 'ping': {
+        const host = args[0] || 'localhost';
+        await tl('out', `  PING ${host}: 56 data bytes`, 200);
+        await tl('out', `  Request timeout for icmp_seq 0`, 700);
+        await tl('out', `  Request timeout for icmp_seq 1`, 700);
+        await tl('out', `  Request timeout for icmp_seq 2`, 700);
+        await tl('blk');
+        await tl('dim', `  // Outbound ICMP blocked by perimeter firewall.`, 0);
+        await tl('dim', `  // Try: threat-map for a visual network view.`, 0);
+        await tl('blk');
+        break;
+    }
+
+    case 'vim': {
+        await tl('out', '  Opening vim...', 300);
+        await tl('blk');
+        await tl('out', '  -- INSERT --', 400);
+        await tl('out', '  ^C^C:q!:wq!^D^D:x!ZZQ', 800);
+        await tl('blk');
+        await tl('out', '  Still in vim? Perfectly understandable.', 400);
+        await tl('out', '  Type :q! to exit. Or :wq. Or just wait.', 400);
+        await tl('out', "  We've got time.", 800);
+        await tl('blk');
+        await tl('dim', '  [vim process terminated by CrowdStrike EDR]', 0);
+        await tl('blk');
+        break;
+    }
+
+    case 'neofetch': {
+        const logo = [
+            '  ╔═══════════════╗',
+            '  ║               ║',
+            '  ║   >_ CSIRT    ║',
+            '  ║   ENGINEERING ║',
+            '  ║               ║',
+            '  ╚═══════════════╝',
+            '                   ',
+        ];
+        const info = [
+            'sam@defence',
+            '─'.repeat(28),
+            'OS      : CSIRT Linux 5.0 LTS',
+            'Host    : Samuel Houghton',
+            'Kernel  : 4.2.0-crowdstrike-falcon',
+            'Uptime  : 5+ years in security',
+            'Shell   : bash 5.2.15',
+            'CPU     : CSIRT_CORE @ 4.2GHz (x8)',
+            'Memory  : 65536 MiB DDR5 ECC',
+            'Disk    : /dev/nvme0 [AES-256]',
+            'EDR     : CrowdStrike Falcon [ACTIVE]',
+            'SIEM    : [STREAMING]',
+            'VPN     : AES-256-GCM [SECURE]',
+        ];
+        await tl('blk');
+        const rows = Math.max(logo.length, info.length);
+        for (let i = 0; i < rows; i++) {
+            const l = (logo[i] || '                   ').padEnd(20);
+            const r = info[i] || '';
+            await tl(i < 2 ? 'out' : i === 2 ? 'hdr' : 'out', l + '  ' + r, 55);
+        }
+        await tl('blk');
+        break;
+    }
+
+    case 'man': {
+        const topic = args[0] || '';
+        if (!topic) {
+            await tl('err', '  man: what manual page do you want?', 0);
+            await tl('blk');
+            break;
+        }
+        await tl('hdr', `  MAN(1)            CSIRT Terminal Manual Pages            MAN(1)`, 0);
+        await tl('blk');
+        await tl('out', `  NAME`, 0);
+        await tl('out', `       ${topic} — CSIRT command`, 0);
+        await tl('blk');
+        await tl('out', `  DESCRIPTION`, 0);
+        await tl('out', `       This is a CSIRT operations terminal. Commands are purpose-built`, 0);
+        await tl('out', `       for cyber defence and are not documented in standard man pages.`, 0);
+        await tl('blk');
+        await tl('out', `  BUGS`, 0);
+        await tl('out', `       You're not in Kansas anymore.`, 0);
+        await tl('blk');
+        await tl('out', `  SEE ALSO`, 0);
+        await tl('out', `       help(1), whoami(1), threat-map(1), neofetch(1)`, 0);
+        await tl('blk');
+        break;
+    }
+
+    case 'ip': {
+        const sub = args[0];
+        if (sub === 'a' || sub === 'addr') {
+            await tl('out', '  1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536', 0);
+            await tl('out', '      inet 127.0.0.1/8 scope host lo', 0);
+            await tl('blk');
+            await tl('out', '  2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500', 0);
+            await tl('out', '      link/ether aa:bb:cc:dd:ee:ff', 0);
+            await tl('out', '      inet 10.0.0.42/24 brd 10.0.0.255 scope global eth0', 0);
+            await tl('blk');
+            await tl('out', '  3: vpn0: <POINTOPOINT,UP,LOWER_UP> mtu 1420', 0);
+            await tl('out', '      inet 172.16.0.1/24 scope global vpn0  [AES-256-GCM]', 0);
+            await tl('blk');
+        } else {
+            await tl('err', `  ip: unknown subcommand '${sub || ''}'`, 0);
+            await tl('dim', '  // Try: ip a', 0);
+            await tl('blk');
+        }
+        break;
+    }
+
     }
 }
 
@@ -439,6 +709,14 @@ class Terminal {
     run(cmd, raw, args = []) {
         this.addLine('cmd', `sam@defence:~$ ${raw}`);
 
+        // echo handled inline — needs raw args
+        if (cmd === 'echo') {
+            this.addLine('out', '  ' + args.join(' '));
+            this.addLine('blk');
+            this.scroll();
+            return;
+        }
+
         if (!(cmd in COMMANDS)) {
             this.addLine('err', `command not found: ${cmd} — type 'help' for available commands`);
             this.addLine('blk');
@@ -466,6 +744,35 @@ class Terminal {
             setTimeout(() => window.open('https://www.linkedin.com/in/sam-houghton-31274150/', '_blank', 'noopener'), 400);
             return;
         }
+        if (result === 'HISTORY') {
+            const h = [...this.history].reverse();
+            if (h.length === 0) {
+                this.addLine('out', '  No commands in history.');
+            } else {
+                h.forEach((c, i) => this.addLine('out', `  ${String(i + 1).padStart(4)}  ${c}`));
+            }
+            this.addLine('blk');
+            this.scroll();
+            return;
+        }
+
+        if (result === 'REBOOT') {
+            this.addLine('out', '  [*] Initiating system reboot...');
+            this.addLine('dim', '  Broadcast message from sam@defence: system is going down NOW');
+            this.scroll();
+            setTimeout(() => {
+                this.outputEl.innerHTML = '';
+                const screen = document.getElementById('boot-screen');
+                const bootText = document.getElementById('boot-text');
+                bootText.innerHTML = '';
+                screen.style.display = 'flex';
+                screen.style.opacity = '1';
+                screen.classList.remove('fade-out');
+                runBoot();
+            }, 1000);
+            return;
+        }
+
         if (result === 'ASYNC') {
             this.busy = true;
             this.inputEl.style.opacity = '0.3';
@@ -507,7 +814,7 @@ class Terminal {
             '╚══════════════════════════════════════════════════════╝',
             '',
             "  Type 'help' for available commands.",
-            "  Try: whoami  |  threat-map  |  hunt  |  status",
+            "  Try: whoami  |  threat-map  |  neofetch  |  hunt",
             '',
         ];
         lines.forEach(l => this.addLine('out', l));
