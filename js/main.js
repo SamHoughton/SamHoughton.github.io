@@ -819,7 +819,8 @@ class Terminal {
         ];
         lines.forEach(l => this.addLine('out', l));
         this.scroll();
-        this.inputEl.focus();
+        // Only auto-focus on desktop — avoids keyboard popup on mobile
+        if (window.innerWidth > 860) this.inputEl.focus();
     }
 }
 
@@ -875,20 +876,6 @@ function initMatrix() {
         requestAnimationFrame(draw);
     }
     draw();
-}
-
-// ── Skill Bars ─────────────────────────────────────────────────
-function initSkillBars() {
-    const obs = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if (e.isIntersecting) {
-                const b = e.target;
-                setTimeout(() => { b.style.width = b.dataset.w + '%'; }, 150);
-                obs.unobserve(b);
-            }
-        });
-    }, { threshold: 0.3 });
-    document.querySelectorAll('.sk-fill').forEach(b => obs.observe(b));
 }
 
 // ── World Map ──────────────────────────────────────────────────
@@ -1240,7 +1227,6 @@ function initSite() {
     const term = new Terminal();
     term.welcome();
     initMatrix();
-    initSkillBars();
     initHamburger();
     preloadWorldMap();
 }

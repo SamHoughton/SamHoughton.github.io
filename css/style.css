@@ -665,18 +665,18 @@ section { padding: 100px 40px; }
     .nav-links { display: none; }
     .nav-actions { display: none; }
     .nav-hamburger { display: flex; }
-    #hero-tagline { white-space: normal; gap: 6px; bottom: 60px; }
+    #hero-tagline { white-space: normal; gap: 6px; bottom: 72px; }
 
     section { padding: 60px 20px; }
 
     .about-grid { grid-template-columns: 1fr; gap: 36px; }
     .stat-grid  { grid-template-columns: 1fr 1fr; }
 
-    .timeline::before { left: 0; }
+    .timeline::before { left: 8px; }
     .tl-item { grid-template-columns: 1fr; padding-bottom: 36px; }
-    .tl-item::after { left: -4px; }
-    .tl-date { text-align: left; padding-right: 0; padding-bottom: 6px; }
-    .tl-body { padding-left: 20px; }
+    .tl-item::after { left: 4px; top: 4px; }
+    .tl-date { text-align: left; padding-right: 0; padding-left: 26px; padding-bottom: 6px; }
+    .tl-body { padding-left: 26px; }
 
     .skills-grid { grid-template-columns: 1fr; gap: 32px; }
     .projects-grid { grid-template-columns: 1fr; }
