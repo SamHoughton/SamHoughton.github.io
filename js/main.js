@@ -22,12 +22,61 @@ const BOOT_LINES = [
     '',
 ];
 
-// ── Terminal Command Definitions ───────────────────────────────
-function makeBar(pct) {
-    const filled = Math.round(pct / 5);
-    return '█'.repeat(filled) + '░'.repeat(20 - filled);
-}
+// ── Utility ────────────────────────────────────────────────────
+function rand(arr)         { return arr[Math.floor(Math.random() * arr.length)]; }
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function randIP()          { return `${randInt(10,254)}.${randInt(0,254)}.${randInt(0,254)}.${randInt(1,254)}`; }
+function randHex(n)        { return [...Array(n)].map(() => randInt(0,15).toString(16)).join(''); }
+function makeBar(pct)      { const f = Math.round(pct / 5); return '█'.repeat(f) + '░'.repeat(20 - f); }
+function pad(s, n)         { return String(s).padEnd(n); }
 
+// ── Threat Pool ────────────────────────────────────────────────
+const THREAT_POOL = [
+    { name: 'Moscow',       lat:  55.75, lng:  37.61 },
+    { name: 'Beijing',      lat:  39.91, lng: 116.39 },
+    { name: 'Tehran',       lat:  35.69, lng:  51.42 },
+    { name: 'Pyongyang',    lat:  39.03, lng: 125.75 },
+    { name: 'Lagos',        lat:   6.52, lng:   3.38 },
+    { name: 'São Paulo',    lat: -23.55, lng: -46.63 },
+    { name: 'Bucharest',    lat:  44.43, lng:  26.10 },
+    { name: 'Minsk',        lat:  53.90, lng:  27.57 },
+    { name: 'Bangalore',    lat:  12.97, lng:  77.59 },
+    { name: 'Toronto',      lat:  43.65, lng: -79.38 },
+    { name: 'Kyiv',         lat:  50.45, lng:  30.52 },
+    { name: 'Shanghai',     lat:  31.23, lng: 121.47 },
+    { name: 'Caracas',      lat:  10.49, lng: -66.88 },
+    { name: 'Nairobi',      lat:  -1.28, lng:  36.82 },
+    { name: 'Jakarta',      lat:  -6.21, lng: 106.85 },
+    { name: 'Ankara',       lat:  39.93, lng:  32.86 },
+    { name: 'Hanoi',        lat:  21.03, lng: 105.83 },
+    { name: 'Bogotá',       lat:   4.71, lng: -74.07 },
+    { name: 'Mexico City',  lat:  19.43, lng: -99.13 },
+    { name: 'Cairo',        lat:  30.06, lng:  31.25 },
+    { name: 'Baku',         lat:  40.41, lng:  49.87 },
+    { name: 'Dhaka',        lat:  23.72, lng:  90.41 },
+    { name: 'Almaty',       lat:  43.22, lng:  76.85 },
+    { name: 'Riyadh',       lat:  24.69, lng:  46.72 },
+];
+
+const THREAT_GROUPS = [
+    { name: 'APT28',           color: '#ff3b3b' },
+    { name: 'APT41',           color: '#ff3b3b' },
+    { name: 'LAZARUS GROUP',   color: '#ff3b3b' },
+    { name: 'COZY BEAR',       color: '#ff3b3b' },
+    { name: 'FANCY BEAR',      color: '#ff3b3b' },
+    { name: 'COBALT ILLUSION', color: '#ff8800' },
+    { name: 'DARKSIDE',        color: '#ff8800' },
+    { name: 'RANSOMWARE-X',    color: '#ff8800' },
+    { name: 'C2 BOTNET',       color: '#ff8800' },
+    { name: 'BEC CAMPAIGN',    color: '#ffd000' },
+    { name: 'PHISHING NET',    color: '#ffd000' },
+    { name: 'FINANCIAL TTP',   color: '#ffd000' },
+    { name: 'ZERO-DAY',        color: '#ff3b3b' },
+    { name: 'SUPPLY CHAIN',    color: '#ff3b3b' },
+    { name: 'APT3',            color: '#ff3b3b' },
+];
+
+// ── Static Commands ────────────────────────────────────────────
 const COMMANDS = {
     help: () => [
         { k: 'hdr', v: '┌─ COMMAND REFERENCE ───────────────────────┐' },
@@ -36,8 +85,15 @@ const COMMANDS = {
         { k: 'out', v: '  skills       list technical capabilities' },
         { k: 'out', v: '  certs        display certifications' },
         { k: 'out', v: '  threat-map   launch global threat map' },
+        { k: 'out', v: '  scan         run network scan' },
+        { k: 'out', v: '  hunt         initiate threat hunt' },
+        { k: 'out', v: '  status       CSIRT system status' },
+        { k: 'out', v: '  ioc          indicators of compromise' },
+        { k: 'out', v: '  decode <b64> decode a base64 string' },
+        { k: 'out', v: '  ssh <target> connect to remote host' },
+        { k: 'out', v: '  cv           open LinkedIn profile' },
         { k: 'out', v: '  contact      display contact intel' },
-        { k: 'out', v: '  clear        clear terminal output' },
+        { k: 'out', v: '  clear        clear terminal' },
         { k: 'blk' },
     ],
 
@@ -107,9 +163,9 @@ const COMMANDS = {
     certs: () => [
         { k: 'hdr', v: '┌─ CERTIFICATIONS & CREDENTIALS ────────────┐' },
         { k: 'blk' },
-        { k: 'out', v: '  [ACTIVE]   BTL1  — Blue Team Level 1' },
-        { k: 'out', v: '  [ACTIVE]   BSc Computer Science — Univ. of Lincoln' },
-        { k: 'out', v: '  [------]   Additional certifications in progress...' },
+        { k: 'out', v: '  [ACTIVE]  BTL1  — Blue Team Level 1' },
+        { k: 'out', v: '  [ACTIVE]  BSc Computer Science — Univ. of Lincoln' },
+        { k: 'out', v: '  [------]  Additional certifications in progress...' },
         { k: 'blk' },
     ],
 
@@ -123,9 +179,207 @@ const COMMANDS = {
         { k: 'blk' },
     ],
 
-    clear: () => 'CLEAR',
+    cv: () => 'CV',
+    clear:        () => 'CLEAR',
     'threat-map': () => 'THREAT_MAP',
+    scan:         () => 'ASYNC',
+    hunt:         () => 'ASYNC',
+    status:       () => 'ASYNC',
+    ioc:          () => 'ASYNC',
+    decode:       () => 'ASYNC',
+    ssh:          () => 'ASYNC',
 };
+
+// ── Async Command Runner ────────────────────────────────────────
+async function runAsyncCmd(baseCmd, args, term) {
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    async function tl(type, text = '', ms = 45) {
+        term.addLine(type, text);
+        term.scroll();
+        if (ms > 0) await sleep(ms);
+    }
+
+    switch (baseCmd) {
+
+    case 'scan': {
+        const a = args[0] || `10.${randInt(0,9)}.0.0/24`;
+        const base = a.split('.').slice(0, 2).join('.');
+        const suspiciousIP = `${base}.0.${randInt(100, 220)}`;
+        const hosts = [
+            { ip: `${base}.0.1`,                 os: 'Windows Server 2022',  ports: '80/http  443/https  3389/rdp',       sus: false },
+            { ip: `${base}.0.${randInt(11,49)}`,  os: 'Ubuntu 22.04 LTS',     ports: '22/ssh  8080/http-alt',              sus: false },
+            { ip: `${base}.0.${randInt(50,99)}`,  os: 'Windows 11 Pro',        ports: '135/msrpc  445/smb  49152/dynamic', sus: false },
+            { ip: suspiciousIP,                   os: '[!] UNKNOWN OS',        ports: `4444/OPEN  ${randInt(1025,9999)}/OPEN`, sus: true },
+        ];
+
+        await tl('out', `  [*] CSIRT Scanner v2.4.1 — target: ${a}`, 200);
+        await tl('out',  '  [*] Scanning...', 800);
+        await tl('blk',  '', 100);
+        await tl('out', `  ${'IP'.padEnd(18)} ${'OS'.padEnd(24)} PORTS`, 0);
+        await tl('out',  '  ' + '─'.repeat(64), 50);
+
+        for (const h of hosts) {
+            await tl(h.sus ? 'warn' : 'out',
+                `  ${h.sus ? '[!]' : '[+]'} ${pad(h.ip, 16)} ${pad(h.os, 22)} ${h.ports}`,
+                h.sus ? 700 : randInt(200, 400));
+        }
+
+        await tl('blk', '', 100);
+        await tl('warn', `  [!] ANOMALY: Port 4444 on ${suspiciousIP} — known C2 port`, 200);
+        await tl('warn', `  [!] ACTION : Isolate ${suspiciousIP} and investigate immediately`, 0);
+        await tl('blk');
+        break;
+    }
+
+    case 'hunt': {
+        const ep    = `ENDPOINT-0${randInt(10,99)}`;
+        const ep2   = `ENDPOINT-0${randInt(10,99)}`;
+        const hash1 = randHex(12) + '...' + randHex(6);
+        const hash2 = randHex(12) + '...' + randHex(6);
+
+        await tl('hdr', '┌─ THREAT HUNT INITIATED ───────────────────┐', 0);
+        await tl('blk');
+        await tl('out', '  [*] Querying EDR telemetry across all endpoints...', 400);
+        await tl('out', '  [*] Cross-referencing MITRE ATT&CK framework...', 500);
+        await tl('out', '  [*] Scanning for lateral movement indicators...', 600);
+        await tl('out', '  [*] Analysing PowerShell execution history...', 400);
+        await tl('blk');
+
+        await tl('warn', `  [!] ANOMALY — ${ep}`, 100);
+        await tl('warn', `      Process : svchost.exe → powershell.exe -enc ${randHex(32)}`, 50);
+        await tl('warn',  '      MITRE   : T1059.001 — Command & Scripting (PowerShell)', 50);
+        await tl('warn',  '      Hash    : ' + hash1, 50);
+        await tl('warn',  '      Severity: HIGH', 300);
+        await tl('blk');
+
+        await tl('warn', `  [!] ANOMALY — ${ep2}`, 100);
+        await tl('warn',  '      Artefact: HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run', 50);
+        await tl('warn', `      Value   : WindowsUpdate_${randHex(8)}.exe [SUSPICIOUS]`, 50);
+        await tl('warn',  '      MITRE   : T1547.001 — Boot/Logon Autostart Execution', 50);
+        await tl('warn',  '      Hash    : ' + hash2, 50);
+        await tl('warn',  '      Severity: MEDIUM', 300);
+        await tl('blk');
+
+        await tl('out', '  [*] Pivoting on IOCs...', 400);
+        await tl('out', '  [+] No confirmed C2 beaconing', 200);
+        await tl('out', '  [+] No lateral movement chains confirmed', 200);
+        await tl('blk');
+        await tl('out', '  [HUNT COMPLETE] 2 anomalies flagged — open incident recommended', 0);
+        await tl('blk');
+        break;
+    }
+
+    case 'status': {
+        const now     = new Date();
+        const upDays  = randInt(30, 90);
+        const upHours = randInt(0, 23);
+        const eps     = randInt(200, 300);
+        const updated = randInt(2, 30);
+
+        await tl('hdr', '┌─ CSIRT SYSTEM STATUS ──────────────────────┐', 0);
+        await tl('blk');
+        await tl('out', `  ${'SERVICE'.padEnd(22)} ${'STATUS'.padEnd(14)} DETAIL`, 50);
+        await tl('out', '  ' + '─'.repeat(56), 50);
+
+        const services = [
+            { name: 'CrowdStrike Falcon',  status: 'RUNNING',   detail: 'v7.14.0' },
+            { name: 'SIEM Pipeline',        status: 'STREAMING', detail: `${eps} events/sec` },
+            { name: 'Threat Intel Feed',    status: 'LIVE',      detail: `updated ${updated}s ago` },
+            { name: 'IR Playbook',          status: 'READY',     detail: 'v3.2' },
+            { name: 'Firewall',             status: 'ACTIVE',    detail: `${randInt(1500,2500)} blocks/hr` },
+            { name: 'VPN Tunnel',           status: 'SECURE',    detail: 'AES-256-GCM' },
+            { name: 'EDR Coverage',         status: '100%',      detail: 'all endpoints' },
+        ];
+
+        for (const s of services) {
+            await tl('out', `  ${pad(s.name, 22)} [${pad(s.status, 12)}] ${s.detail}`, 80);
+        }
+
+        await tl('blk');
+        await tl('out', `  Uptime          : ${upDays}d ${upHours}h`, 50);
+        await tl('out', `  Open Incidents  : 0`, 50);
+        await tl('out', `  Alerts (24h)    : ${randInt(10,20)} HIGH   ${randInt(25,45)} MEDIUM   ${randInt(150,250)} LOW`, 50);
+        await tl('out', `  Last IR Action  : ${randInt(3,14)} days ago`, 50);
+        await tl('out', `  Time            : ${now.toUTCString()}`, 50);
+        await tl('blk');
+        break;
+    }
+
+    case 'ioc': {
+        const ips = [randIP(), randIP(), randIP()];
+        const hash1 = randHex(16) + '...' + randHex(8);
+        const hash2 = randHex(16) + '...' + randHex(8);
+
+        await tl('hdr', '┌─ INDICATORS OF COMPROMISE ────────────────┐', 0);
+        await tl('blk');
+        await tl('out', `  ${'TYPE'.padEnd(10)} ${'INDICATOR'.padEnd(36)} CONFIDENCE`, 50);
+        await tl('out', '  ' + '─'.repeat(60), 50);
+
+        const iocs = [
+            { type: 'IP',     indicator: ips[0],                        conf: 'HIGH' },
+            { type: 'IP',     indicator: ips[1],                        conf: 'HIGH' },
+            { type: 'IP',     indicator: ips[2],                        conf: 'MEDIUM' },
+            { type: 'DOMAIN', indicator: `update-${randHex(4)}-cdn.ru`, conf: 'CRITICAL' },
+            { type: 'DOMAIN', indicator: `micros0ft-${randHex(4)}.com`, conf: 'HIGH' },
+            { type: 'HASH',   indicator: hash1,                         conf: 'HIGH' },
+            { type: 'HASH',   indicator: hash2,                         conf: 'MEDIUM' },
+            { type: 'UA',     indicator: `Mozilla/5.0 [C2-sig-${randHex(4)}]`, conf: 'MEDIUM' },
+        ];
+
+        for (const ioc of iocs) {
+            const isCrit = ioc.conf === 'CRITICAL' || ioc.conf === 'HIGH';
+            await tl(isCrit ? 'warn' : 'out',
+                `  ${pad(ioc.type, 10)} ${pad(ioc.indicator, 36)} ${ioc.conf}`,
+                randInt(60, 120));
+        }
+
+        await tl('blk');
+        await tl('out', `  Source: CSIRT Threat Intel Feed — updated ${randInt(2,20)}m ago`, 0);
+        await tl('blk');
+        break;
+    }
+
+    case 'decode': {
+        const b64 = args.join(' ').trim();
+        if (!b64) {
+            await tl('err', '  Usage: decode <base64string>', 0);
+            await tl('err', '  Example: decode SGVsbG8gV29ybGQ=', 0);
+            await tl('blk');
+            break;
+        }
+        await tl('out', '  [*] Decoding...', 300);
+        try {
+            const decoded = atob(b64);
+            await tl('out', `  [+] ${decoded}`, 0);
+        } catch (e) {
+            await tl('err', '  [!] Error: Invalid base64 string', 0);
+        }
+        await tl('blk');
+        break;
+    }
+
+    case 'ssh': {
+        const target = args[0] || `${randInt(10,192)}.${randInt(0,254)}.${randInt(0,254)}.${randInt(1,254)}`;
+        await tl('out', `  [*] Initiating SSH connection to ${target}...`, 200);
+        await tl('out',  '  [*] Resolving hostname...', 400);
+        await tl('out', `  [*] Connecting to ${target} port 22...`, 500);
+        await tl('out',  '  [*] SSH-2.0-OpenSSH_9.3p1 Ubuntu-1ubuntu3.6', 300);
+        await tl('out',  '  [*] Negotiating key exchange (curve25519-sha256)...', 600);
+        await tl('out',  '  [*] Host key fingerprint: SHA256:' + randHex(43), 400);
+        await tl('out',  '  [*] Authentication: public key...', 500);
+        await tl('out', `  [+] Connection established.`, 200);
+        await tl('blk');
+        await tl('out', `  Last login: ${new Date().toDateString()} from 10.0.0.1`, 100);
+        await tl('out', `  sam@${target.replace(/\./g,'-')}:~$ _`, 1500);
+        await tl('blk');
+        await tl('dim', '  [Session timeout — connection closed]', 0);
+        await tl('blk');
+        break;
+    }
+
+    }
+}
 
 // ── Terminal Class ─────────────────────────────────────────────
 class Terminal {
@@ -135,19 +389,24 @@ class Terminal {
         this.bodyEl   = document.getElementById('terminal-body');
         this.history  = [];
         this.histIdx  = -1;
+        this.busy     = false;
 
         this.inputEl.addEventListener('keydown', e => this.onKey(e));
         this.bodyEl.addEventListener('click', () => this.inputEl.focus());
     }
 
     onKey(e) {
+        if (this.busy && e.key !== 'Tab') return;
+
         if (e.key === 'Enter') {
-            const raw = this.inputEl.value.trim();
-            const cmd = raw.toLowerCase();
+            const raw   = this.inputEl.value.trim();
+            const parts = raw.toLowerCase().split(/\s+/);
+            const cmd   = parts[0];
+            const args  = parts.slice(1);
             if (cmd) {
-                this.history.unshift(cmd);
+                this.history.unshift(raw);
                 this.histIdx = -1;
-                this.run(cmd, raw);
+                this.run(cmd, raw, args);
             }
             this.inputEl.value = '';
         } else if (e.key === 'ArrowUp') {
@@ -167,7 +426,7 @@ class Terminal {
             }
         } else if (e.key === 'Tab') {
             e.preventDefault();
-            this.autocomplete(this.inputEl.value.trim().toLowerCase());
+            this.autocomplete(this.inputEl.value.trim().toLowerCase().split(/\s+/)[0]);
         }
     }
 
@@ -177,7 +436,7 @@ class Terminal {
         if (match) this.inputEl.value = match;
     }
 
-    run(cmd, raw) {
+    run(cmd, raw, args = []) {
         this.addLine('cmd', `sam@defence:~$ ${raw}`);
 
         if (!(cmd in COMMANDS)) {
@@ -200,15 +459,29 @@ class Terminal {
             setTimeout(openThreatMap, 500);
             return;
         }
+        if (result === 'CV') {
+            this.addLine('out', '  Opening LinkedIn profile...');
+            this.addLine('blk');
+            this.scroll();
+            setTimeout(() => window.open('https://www.linkedin.com/in/sam-houghton-31274150/', '_blank', 'noopener'), 400);
+            return;
+        }
+        if (result === 'ASYNC') {
+            this.busy = true;
+            this.inputEl.style.opacity = '0.3';
+            runAsyncCmd(cmd, args, this).finally(() => {
+                this.busy = false;
+                this.inputEl.style.opacity = '1';
+                this.inputEl.focus();
+            });
+            return;
+        }
 
         result.forEach(r => {
             if (r.k === 'hdr') this.addLine('hdr', r.v);
             else if (r.k === 'out') this.addLine('out', r.v);
             else if (r.k === 'blk') this.addLine('blk');
-            else if (r.k === 'bar') {
-                const bar = makeBar(r.p);
-                this.addLine('bar', `  ${r.v} [${bar}] ${r.p}%`);
-            }
+            else if (r.k === 'bar') this.addLine('bar', `  ${r.v} [${makeBar(r.p)}] ${r.p}%`);
         });
 
         this.scroll();
@@ -218,13 +491,6 @@ class Terminal {
         const span = document.createElement('span');
         span.className = `t-line t-${type}`;
         span.textContent = text;
-        this.outputEl.appendChild(span);
-    }
-
-    addHTML(html) {
-        const span = document.createElement('span');
-        span.className = 't-line t-out';
-        span.innerHTML = html;
         this.outputEl.appendChild(span);
     }
 
@@ -241,7 +507,7 @@ class Terminal {
             '╚══════════════════════════════════════════════════════╝',
             '',
             "  Type 'help' for available commands.",
-            "  Try: whoami  |  skills  |  threat-map",
+            "  Try: whoami  |  threat-map  |  hunt  |  status",
             '',
         ];
         lines.forEach(l => this.addLine('out', l));
@@ -254,16 +520,12 @@ class Terminal {
 function runBoot() {
     const el = document.getElementById('boot-text');
     let i = 0;
-
     function next() {
         if (i >= BOOT_LINES.length) {
             setTimeout(() => {
                 const screen = document.getElementById('boot-screen');
                 screen.classList.add('fade-out');
-                setTimeout(() => {
-                    screen.style.display = 'none';
-                    initSite();
-                }, 650);
+                setTimeout(() => { screen.style.display = 'none'; initSite(); }, 650);
             }, 300);
             return;
         }
@@ -277,9 +539,9 @@ function runBoot() {
 
 // ── Matrix Rain ────────────────────────────────────────────────
 function initMatrix() {
-    const canvas = document.getElementById('matrix-canvas');
-    const ctx    = canvas.getContext('2d');
-    const chars  = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ∑∆≠≈';
+    const canvas   = document.getElementById('matrix-canvas');
+    const ctx      = canvas.getContext('2d');
+    const chars    = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ∑∆≠≈';
     const fontSize = 13;
     let cols, drops;
 
@@ -310,35 +572,19 @@ function initMatrix() {
 
 // ── Skill Bars ─────────────────────────────────────────────────
 function initSkillBars() {
-    const bars = document.querySelectorAll('.sk-fill');
     const obs = new IntersectionObserver(entries => {
         entries.forEach(e => {
             if (e.isIntersecting) {
-                const bar = e.target;
-                setTimeout(() => { bar.style.width = bar.dataset.w + '%'; }, 150);
-                obs.unobserve(bar);
+                const b = e.target;
+                setTimeout(() => { b.style.width = b.dataset.w + '%'; }, 150);
+                obs.unobserve(b);
             }
         });
     }, { threshold: 0.3 });
-    bars.forEach(b => obs.observe(b));
+    document.querySelectorAll('.sk-fill').forEach(b => obs.observe(b));
 }
 
-// ── Threat Map ─────────────────────────────────────────────────
-const THREAT_NODES = [
-    { name: 'Moscow',    lat: 55.75,  lng:  37.61, group: 'APT28',          color: '#ff3b3b' },
-    { name: 'Beijing',   lat: 39.91,  lng: 116.39, group: 'APT41',          color: '#ff3b3b' },
-    { name: 'Tehran',    lat: 35.69,  lng:  51.42, group: 'COBALT ILLUSION', color: '#ff8800' },
-    { name: 'Pyongyang', lat: 39.03,  lng: 125.75, group: 'LAZARUS',         color: '#ff3b3b' },
-    { name: 'Lagos',     lat:  6.52,  lng:   3.38, group: 'BEC CAMPAIGN',    color: '#ffd000' },
-    { name: 'São Paulo', lat: -23.55, lng: -46.63, group: 'FINANCIAL TTP',   color: '#ffd000' },
-    { name: 'Bucharest', lat: 44.43,  lng:  26.10, group: 'RANSOMWARE',      color: '#ff8800' },
-    { name: 'Minsk',     lat: 53.90,  lng:  27.57, group: 'APT3',            color: '#ff3b3b' },
-    { name: 'Bangalore', lat: 12.97,  lng:  77.59, group: 'PHISHING NET',    color: '#ffd000' },
-    { name: 'Toronto',   lat: 43.65,  lng: -79.38, group: 'C2 NODE',         color: '#ff8800' },
-];
-const TARGET = { name: 'LONDON', lat: 51.51, lng: -0.12 };
-
-// ── World Map (Natural Earth 110m via CDN) ─────────────────────
+// ── World Map ──────────────────────────────────────────────────
 let geoLand = null;
 
 async function preloadWorldMap() {
@@ -362,7 +608,6 @@ function drawLand(ctx, w, h) {
     function project([lng, lat]) {
         return [(lng + 180) * (w / 360), (90 - lat) * (h / 180)];
     }
-
     function drawRing(ring) {
         ctx.beginPath();
         ring.forEach((pt, i) => {
@@ -377,36 +622,30 @@ function drawLand(ctx, w, h) {
     geoLand.features.forEach(f => {
         const g = f.geometry;
         if (!g) return;
-        if (g.type === 'Polygon') {
-            drawRing(g.coordinates[0]);
-        } else if (g.type === 'MultiPolygon') {
-            g.coordinates.forEach(poly => drawRing(poly[0]));
-        }
+        if (g.type === 'Polygon')      drawRing(g.coordinates[0]);
+        else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => drawRing(p[0]));
     });
-
     ctx.restore();
 }
 
+// ── Threat Map ─────────────────────────────────────────────────
+const TARGET = { name: 'LONDON', lat: 51.51, lng: -0.12 };
 let tmRunning = false;
 let tmRaf     = null;
+let tmBlockedCount = 1893;
 
 function ll2xy(lat, lng, w, h) {
-    return {
-        x: (lng + 180) * (w / 360),
-        y: (90 - lat)  * (h / 180),
-    };
+    return { x: (lng + 180) * (w / 360), y: (90 - lat) * (h / 180) };
 }
 
 function openThreatMap() {
     const overlay = document.getElementById('threat-map-overlay');
     overlay.classList.remove('hidden');
-
     const canvas = document.getElementById('threat-map');
     const w = Math.min(window.innerWidth - 48, 1200);
     const h = Math.min(window.innerHeight - 200, 560);
     canvas.width  = w;
     canvas.height = h;
-
     tmRunning = true;
     animateThreatMap(canvas);
     animateCounters();
@@ -422,18 +661,20 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeThreatM
 document.getElementById('tm-close').addEventListener('click', closeThreatMap);
 
 function animateCounters() {
-    const targets = { threats: 247, blocked: 1893 };
-    const els     = { threats: document.getElementById('s-threats'), blocked: document.getElementById('s-blocked') };
+    const startBlocked  = tmBlockedCount;
+    const startThreats  = 247;
+    const elsT = document.getElementById('s-threats');
+    const elsB = document.getElementById('s-blocked');
     let t = 0;
     function tick() {
         t++;
         if (t <= 80) {
-            els.threats.textContent = Math.round((t / 80) * targets.threats);
-            els.blocked.textContent = Math.round((t / 80) * targets.blocked);
+            elsT.textContent = Math.round((t / 80) * startThreats);
+            elsB.textContent = Math.round((t / 80) * startBlocked);
             requestAnimationFrame(tick);
         } else {
-            els.threats.textContent = targets.threats;
-            els.blocked.textContent = targets.blocked;
+            elsT.textContent = startThreats;
+            elsB.textContent = startBlocked;
         }
     }
     tick();
@@ -445,36 +686,42 @@ function animateThreatMap(canvas) {
     const h   = canvas.height;
     const tgt = ll2xy(TARGET.lat, TARGET.lng, w, h);
 
-    // Build arc objects
-    const arcs = THREAT_NODES.map(n => ({
-        src:      ll2xy(n.lat, n.lng, w, h),
-        color:    n.color,
-        name:     n.name,
-        group:    n.group,
-        progress: Math.random(),
-        speed:    0.0018 + Math.random() * 0.003,
-    }));
+    // Build initial arcs from first 10 pool entries
+    const arcs = THREAT_POOL.slice(0, 10).map(n => {
+        const g = rand(THREAT_GROUPS);
+        return {
+            src:               ll2xy(n.lat, n.lng, w, h),
+            color:             g.color,
+            name:              n.name,
+            group:             g.name,
+            progress:          Math.random(),
+            speed:             0.0018 + Math.random() * 0.003,
+            cycleCount:        0,
+            cyclesBeforeChange: randInt(2, 5),
+            triggered:         false,
+        };
+    });
+
+    // Intercept flash queue
+    const flashes = [];
 
     // Dot grid
     const dotGrid = [];
-    for (let gx = 0; gx < w; gx += 22) {
-        for (let gy = 0; gy < h; gy += 22) {
+    for (let gx = 0; gx < w; gx += 22)
+        for (let gy = 0; gy < h; gy += 22)
             dotGrid.push({ x: gx, y: gy });
-        }
-    }
 
     function quadPoint(t, sx, sy, cx, cy, tx, ty) {
         const mt = 1 - t;
-        return {
-            x: mt * mt * sx + 2 * mt * t * cx + t * t * tx,
-            y: mt * mt * sy + 2 * mt * t * cy + t * t * ty,
-        };
+        return { x: mt*mt*sx + 2*mt*t*cx + t*t*tx, y: mt*mt*sy + 2*mt*t*cy + t*t*ty };
     }
+
+    let frameCount = 0;
 
     function frame() {
         if (!tmRunning) return;
+        frameCount++;
 
-        // Clear
         ctx.clearRect(0, 0, w, h);
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, w, h);
@@ -487,7 +734,7 @@ function animateThreatMap(canvas) {
             ctx.fill();
         });
 
-        // Lat/lng grid lines
+        // Grid lines
         ctx.strokeStyle = 'rgba(0,255,65,0.04)';
         ctx.lineWidth   = 0.5;
         for (let lat = -60; lat <= 60; lat += 30) {
@@ -499,13 +746,45 @@ function animateThreatMap(canvas) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
         }
 
-        // Continent outlines
         drawLand(ctx, w, h);
 
-        // Draw arcs
+        // Arcs
         arcs.forEach(arc => {
             arc.progress += arc.speed;
-            if (arc.progress > 1) arc.progress = 0;
+
+            // On completion
+            if (arc.progress >= 1) {
+                arc.progress -= 1;
+                arc.cycleCount++;
+                arc.triggered = false;
+
+                // Intercept flash
+                flashes.push({
+                    text:  `>> INTERCEPTED: ${arc.name}`,
+                    life:  1.0,
+                    x:     tgt.x + 12,
+                    y:     tgt.y + randInt(-35, 35),
+                });
+                tmBlockedCount += randInt(1, 4);
+                document.getElementById('s-blocked').textContent = tmBlockedCount;
+
+                // Rotate source after N cycles
+                if (arc.cycleCount >= arc.cyclesBeforeChange) {
+                    const newNode  = rand(THREAT_POOL);
+                    const newGroup = rand(THREAT_GROUPS);
+                    arc.src   = ll2xy(newNode.lat, newNode.lng, w, h);
+                    arc.name  = newNode.name;
+                    arc.group = newGroup.name;
+                    arc.color = newGroup.color;
+                    arc.cycleCount        = 0;
+                    arc.cyclesBeforeChange = randInt(2, 5);
+                    // Bump threat counter occasionally
+                    if (Math.random() > 0.5) {
+                        const el = document.getElementById('s-threats');
+                        el.textContent = parseInt(el.textContent) + randInt(1, 3);
+                    }
+                }
+            }
 
             const sx = arc.src.x, sy = arc.src.y;
             const tx = tgt.x,     ty = tgt.y;
@@ -514,17 +793,16 @@ function animateThreatMap(canvas) {
 
             const end   = arc.progress;
             const start = Math.max(0, end - 0.25);
-            const steps = 50;
 
             // Trail
             ctx.beginPath();
-            for (let s = 0; s <= steps; s++) {
-                const t = start + (end - start) * (s / steps);
+            for (let s = 0; s <= 50; s++) {
+                const t = start + (end - start) * (s / 50);
                 const p = quadPoint(t, sx, sy, cx, cy, tx, ty);
                 s === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
             }
             ctx.strokeStyle = arc.color;
-            ctx.globalAlpha = 0.55;
+            ctx.globalAlpha = 0.6;
             ctx.lineWidth   = 1;
             ctx.stroke();
             ctx.globalAlpha = 1;
@@ -533,20 +811,20 @@ function animateThreatMap(canvas) {
             const head = quadPoint(end, sx, sy, cx, cy, tx, ty);
             ctx.beginPath();
             ctx.arc(head.x, head.y, 2.5, 0, Math.PI * 2);
-            ctx.fillStyle  = arc.color;
-            ctx.shadowBlur = 10;
+            ctx.fillStyle   = arc.color;
+            ctx.shadowBlur  = 10;
             ctx.shadowColor = arc.color;
             ctx.fill();
-            ctx.shadowBlur = 0;
+            ctx.shadowBlur  = 0;
 
             // Source dot
             ctx.beginPath();
             ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
-            ctx.fillStyle  = arc.color;
-            ctx.shadowBlur = 8;
+            ctx.fillStyle   = arc.color;
+            ctx.shadowBlur  = 8;
             ctx.shadowColor = arc.color;
             ctx.fill();
-            ctx.shadowBlur = 0;
+            ctx.shadowBlur  = 0;
 
             // Labels
             ctx.font      = '9px Share Tech Mono';
@@ -555,6 +833,21 @@ function animateThreatMap(canvas) {
             ctx.fillStyle = 'rgba(200,220,200,0.45)';
             ctx.fillText(arc.group, sx + 7, sy + 7);
         });
+
+        // Intercept flashes
+        for (let i = flashes.length - 1; i >= 0; i--) {
+            const f = flashes[i];
+            f.life -= 0.016;
+            if (f.life <= 0) { flashes.splice(i, 1); continue; }
+            ctx.save();
+            ctx.globalAlpha = Math.min(1, f.life * 2);
+            ctx.fillStyle   = '#00ff41';
+            ctx.font        = 'bold 9px Share Tech Mono';
+            ctx.shadowBlur  = 6;
+            ctx.shadowColor = '#00ff41';
+            ctx.fillText(f.text, f.x, f.y);
+            ctx.restore();
+        }
 
         // Target pulsing rings
         const pulse = (Math.sin(Date.now() / 280) + 1) / 2;
@@ -569,11 +862,11 @@ function animateThreatMap(canvas) {
         // Target dot
         ctx.beginPath();
         ctx.arc(tgt.x, tgt.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle  = '#00ff41';
-        ctx.shadowBlur = 20;
+        ctx.fillStyle   = '#00ff41';
+        ctx.shadowBlur  = 20;
         ctx.shadowColor = '#00ff41';
         ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur  = 0;
 
         // Crosshairs
         ctx.strokeStyle = 'rgba(0,255,65,0.12)';
@@ -600,14 +893,16 @@ function initHamburger() {
         const open = links.style.display === 'flex';
         links.style.display = open ? 'none' : 'flex';
         if (!open) {
-            links.style.flexDirection = 'column';
-            links.style.position      = 'absolute';
-            links.style.top           = '52px';
-            links.style.right         = '20px';
-            links.style.background    = 'rgba(8,8,8,0.97)';
-            links.style.border        = '1px solid rgba(0,255,65,0.2)';
-            links.style.padding       = '12px 24px';
-            links.style.gap           = '14px';
+            Object.assign(links.style, {
+                flexDirection: 'column',
+                position:      'absolute',
+                top:           '52px',
+                right:         '20px',
+                background:    'rgba(8,8,8,0.97)',
+                border:        '1px solid rgba(0,255,65,0.2)',
+                padding:       '12px 24px',
+                gap:           '14px',
+            });
         }
     });
     links.querySelectorAll('a').forEach(a => {
