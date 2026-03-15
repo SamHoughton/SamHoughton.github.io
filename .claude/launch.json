@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portfolio",
+      "runtimeExecutable": "C:\\Users\\samue\\AppData\\Local\\Zed\\node\\node-v24.11.0-win-x64\\node.exe",
+      "runtimeArgs": ["-e", "require('http').createServer((req,res)=>{const fs=require('fs'),path=require('path');let f=path.join('C:\\\\Users\\\\samue\\\\Documents\\\\GitHub\\\\SamHoughton.github.io\\\\.claude\\\\worktrees\\\\dazzling-swirles',req.url==='/'?'index.html':req.url);const ext={'.html':'text/html','.css':'text/css','.js':'text/javascript','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png'};try{res.writeHead(200,{'Content-Type':ext[path.extname(f)]||'text/plain'});fs.createReadStream(f).pipe(res);}catch(e){res.writeHead(404);res.end('not found');}}).listen(3500)"],
+      "port": 3500
+    }
+  ]
+}
